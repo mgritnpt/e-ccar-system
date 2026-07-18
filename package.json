@@ -1,0 +1,16 @@
+{
+  "name": "e-ccar-root",
+  "version": "1.0.0",
+  "description": "E-CCAR & E-NCR System",
+  "main": "server/index.js",
+  "scripts": {
+    "install:all": "npm install --prefix server && npm install --prefix client",
+    "start": "node server/index.js",
+    "server": "node server/index.js",
+    "client": "npm run dev --prefix client",
+    "dev": "concurrently \"npm run server\" \"npm run client\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
