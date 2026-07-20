@@ -6,16 +6,21 @@ services:
     container_name: eccar-db
     restart: always
     environment:
+      - TZ=Asia/Bangkok
       - MARIADB_ROOT_PASSWORD=eccarRootPass5555
       - MARIADB_DATABASE=eccardb
       - MARIADB_USER=eccaruser
       - MARIADB_PASSWORD=eccarpassword
     volumes:
-      - db_data_eccar:/var/lib/mysql
+      # ย้ายไปเก็บข้อมูลที่พาทถาวรบนเครื่อง Host เพื่อความชัวร์ว่าข้อมูลไม่หายเมื่อย้ายเครื่อง
+      - /home/nptadmin/docker/eccar-system/db:/var/lib/mysql
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
     ports:
       - "3307:3306"
     networks:
       - eccar-network
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
 
   app-eccar:
     image: node:20-alpine
@@ -23,7 +28,12 @@ services:
     restart: always
     working_dir: /app
     volumes:
+      # ใช้พาทสัมพัทธ์ (.) เพื่อให้ Portainer ดึง Source Code ที่โคลนมาจาก GitHub เข้าไปทำงานใน Container ได้ถูกต้อง
       - .:/app
+      # ผูกพาทเก็บไฟล์อัปโหลดภายนอกไว้ที่เครื่อง Host
+      - /home/nptadmin/docker/eccar-system/uploads:/app/server/uploads
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
     ports:
       - "8002:8000"
     depends_on:
@@ -37,13 +47,15 @@ services:
       - DB_PORT=3306
       - JWT_SECRET=eccarSuperSecretKey5555
       - NODE_ENV=production
+    # สั่งติดตั้ง dependencies และรันแอปพลิเคชันจากโครงสร้างโฟลเดอร์ของ Git
     command: sh -c "npm install --prefix server && npm install --prefix client && npm run build --prefix client && npm run start"
     networks:
       - eccar-network
 
-volumes:
-  db_data_eccar:
-
 networks:
   eccar-network:
+    name: eccar-prd-network
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.10.0/24  # กำหนดวงเพื่อป้องกันชนกับระบบ GLPI เดิม
