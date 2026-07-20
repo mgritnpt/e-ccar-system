@@ -6,16 +6,20 @@ services:
     container_name: eccar-db
     restart: always
     environment:
+      - TZ=Asia/Bangkok
       - MARIADB_ROOT_PASSWORD=eccarRootPass5555
       - MARIADB_DATABASE=eccardb
       - MARIADB_USER=eccaruser
       - MARIADB_PASSWORD=eccarpassword
     volumes:
-      - db_data_eccar:/var/lib/mysql
+      - /home/nptadmin/docker/eccar-system/db:/var/lib/mysql
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
     ports:
       - "3307:3306"
     networks:
       - eccar-network
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
 
   app-eccar:
     build:
@@ -23,6 +27,10 @@ services:
       dockerfile: Dockerfile
     container_name: eccar-app
     restart: always
+    volumes:
+      - /home/nptadmin/docker/eccar-system/uploads:/app/server/uploads
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
     ports:
       - "8002:8000"
     depends_on:
@@ -36,15 +44,13 @@ services:
       - DB_PORT=3306
       - JWT_SECRET=eccarSuperSecretKey5555
       - NODE_ENV=production
-    volumes:
-      - uploads_data_eccar:/app/server/uploads
     networks:
       - eccar-network
 
-volumes:
-  db_data_eccar:
-  uploads_data_eccar:
-
 networks:
   eccar-network:
+    name: eccar-prd-network
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.10.0/24
