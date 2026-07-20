@@ -12,7 +12,6 @@ services:
       - MARIADB_USER=eccaruser
       - MARIADB_PASSWORD=eccarpassword
     volumes:
-      # ย้ายไปเก็บข้อมูลที่พาทถาวรบนเครื่อง Host เพื่อความชัวร์ว่าข้อมูลไม่หายเมื่อย้ายเครื่อง
       - /home/nptadmin/docker/eccar-system/db:/var/lib/mysql
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
@@ -28,9 +27,7 @@ services:
     restart: always
     working_dir: /app
     volumes:
-      # ใช้พาทสัมพัทธ์ (.) เพื่อให้ Portainer ดึง Source Code ที่โคลนมาจาก GitHub เข้าไปทำงานใน Container ได้ถูกต้อง
       - .:/app
-      # ผูกพาทเก็บไฟล์อัปโหลดภายนอกไว้ที่เครื่อง Host
       - /home/nptadmin/docker/eccar-system/uploads:/app/server/uploads
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
@@ -47,8 +44,8 @@ services:
       - DB_PORT=3306
       - JWT_SECRET=eccarSuperSecretKey5555
       - NODE_ENV=production
-    # สั่งติดตั้ง dependencies และรันแอปพลิเคชันจากโครงสร้างโฟลเดอร์ของ Git
-    command: sh -c "npm install --prefix server && npm install --prefix client && npm run build --prefix client && npm run start"
+    # --- แก้ไข Command บรรทัดนี้ให้ตรงกับโครงสร้างไฟล์จริง ---
+    command: sh -c "npm install && npm install --prefix client && npm run build --prefix client && npm start"
     networks:
       - eccar-network
 
@@ -58,4 +55,4 @@ networks:
     driver: bridge
     ipam:
       config:
-        - subnet: 172.30.10.0/24  # กำหนดวงเพื่อป้องกันชนกับระบบ GLPI เดิม
+        - subnet: 172.30.10.0/24
