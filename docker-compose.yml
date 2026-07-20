@@ -26,12 +26,9 @@ services:
     container_name: eccar-app
     restart: always
     working_dir: /app
-    # ใช้ build context จากไฟล์ปัจจุบันใน Git
-    build:
-      context: .
-      dockerfile: Dockerfile  # หากมีไฟล์ Dockerfile อยู่ที่ root หรือลบบล็อก build นี้ออกหากต้องการใช้โหมดดึงโค้ดสด
     volumes:
-      # เอา - .:/app ออก เพื่อไม่ให้โฟลเดอร์ว่างบนเซิร์ฟเวอร์ไปทับไฟล์จาก Git
+      # ใช้ ${CONTAINER_WORKSPACE} หรือพิมพ์จุดตรง ๆ เพื่อบอก Portainer ให้ผูกโฟลเดอร์ที่ได้มาจาก Git เข้ากับ /app ในคอนเทนเนอร์
+      - .:/app
       - /home/nptadmin/docker/eccar-system/uploads:/app/server/uploads
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
@@ -48,7 +45,8 @@ services:
       - DB_PORT=3306
       - JWT_SECRET=eccarSuperSecretKey5555
       - NODE_ENV=production
-    command: sh -c "npm install && npm install --prefix client && npm run build --prefix client && npm start"
+    # ปรับสคริปต์ให้เปลี่ยนไดเรกทอรีสลับไปรันคำสั่งตามโครงสร้างจริงของคุณ
+    command: sh -c "cd /app && npm install && npm install --prefix client && npm run build --prefix client && npm start"
     networks:
       - eccar-network
 
