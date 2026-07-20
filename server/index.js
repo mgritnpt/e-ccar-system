@@ -21,6 +21,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 const authController = require('./controllers/authController');
 const ccarController = require('./controllers/ccarController');
 const ncrController = require('./controllers/ncrController');
+const masterDataController = require('./controllers/masterDataController');
 const authMiddleware = require('./middleware/auth');
 const upload = require('./middleware/upload');
 
@@ -30,17 +31,26 @@ app.post('/api/auth/register', authController.register);
 app.post('/api/auth/login', authController.login);
 app.get('/api/auth/me', authMiddleware, authController.me);
 
-// 2. CCAR routes
+// 2. Master Data (Custom Options) routes
+app.get('/api/master-data/public', masterDataController.getActiveMasterData);
+app.get('/api/master-data', masterDataController.getActiveMasterData);
+app.get('/api/master-data/admin', authMiddleware, masterDataController.getAllMasterData);
+app.post('/api/master-data', authMiddleware, masterDataController.createMasterData);
+app.put('/api/master-data/:id', authMiddleware, masterDataController.updateMasterData);
+app.delete('/api/master-data/:id', authMiddleware, masterDataController.deleteMasterData);
+
+// 3. CCAR routes
 app.post('/api/ccar', authMiddleware, ccarController.createCcar);
 app.get('/api/ccar', authMiddleware, ccarController.getCcarList);
 app.get('/api/ccar/:id', authMiddleware, ccarController.getCcarById);
 app.post('/api/ccar/:id/step', authMiddleware, upload.single('file'), ccarController.updateCcarStep);
 
-// 3. NCR routes
+// 4. NCR routes
 app.post('/api/ncr', authMiddleware, ncrController.createNcr);
 app.get('/api/ncr', authMiddleware, ncrController.getNcrList);
 app.get('/api/ncr/:id', authMiddleware, ncrController.getNcrById);
 app.post('/api/ncr/:id/step', authMiddleware, upload.single('file'), ncrController.updateNcrStep);
+
 
 // Fallback for client (Single Page Application support if deployed together)
 if (process.env.NODE_ENV === 'production') {

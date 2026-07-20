@@ -19,6 +19,32 @@ export default function App() {
   const [ncrList, setNcrList] = useState([]);
   const [activeTab, setActiveTab] = useState('ccar'); // ccar, ncr
   
+  // Master data (user-defined options) state
+  const [masterData, setMasterData] = useState({
+    bu_ccar: [],
+    bu_ncr: [],
+    role: [],
+    ccar_subject: [],
+    ncr_plant: [],
+    issued_by_dept: [],
+    quantity_unit: []
+  });
+
+  const fetchMasterData = () => {
+    fetch(`${API_BASE}/master-data/public`)
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.grouped) {
+          setMasterData(data.grouped);
+        }
+      })
+      .catch(err => console.error('Failed to fetch master data:', err));
+  };
+
+  useEffect(() => {
+    fetchMasterData();
+  }, []);
+
   // API header helper
   const getHeaders = () => ({
     'Content-Type': 'application/json',
@@ -145,29 +171,45 @@ export default function App() {
                   <div className="form-group">
                     <label>หน่วยธุรกิจ (BU)</label>
                     <select value={authForm.bu} onChange={e => setAuthForm({ ...authForm, bu: e.target.value })}>
-                      <option value="AOEM">AOEM</option>
-                      <option value="AMAP">AMAP</option>
-                      <option value="AMPC">AMPC</option>
-                      <option value="MO">MO</option>
-                      <option value="GEN">GEN</option>
-                      <option value="PTC">PTC</option>
-                      <option value="CED">CED</option>
-                      <option value="PDP">PDP</option>
-                      <option value="OSSC">OSSC</option>
+                      {(masterData.bu_ccar && masterData.bu_ccar.length > 0) ? (
+                        masterData.bu_ccar.map(item => (
+                          <option key={item.id} value={item.value_key}>{item.value_label}</option>
+                        ))
+                      ) : (
+                        <>
+                          <option value="AOEM">AOEM</option>
+                          <option value="AMAP">AMAP</option>
+                          <option value="AMPC">AMPC</option>
+                          <option value="MO">MO</option>
+                          <option value="GEN">GEN</option>
+                          <option value="PTC">PTC</option>
+                          <option value="CED">CED</option>
+                          <option value="PDP">PDP</option>
+                          <option value="OSSC">OSSC</option>
+                        </>
+                      )}
                     </select>
                   </div>
                   <div className="form-group">
                     <label>บทบาท (System Role) *</label>
                     <select value={authForm.role} onChange={e => setAuthForm({ ...authForm, role: e.target.value })}>
-                      <option value="SALES">Sales / TS / Purchase (ผู้แจ้งเรื่อง)</option>
-                      <option value="QEM">QEM Staff (ผู้ประเมินและคัดกรอง)</option>
-                      <option value="QMR">QMR (ผู้อนุมัติรับเรื่อง / อนุมัติแผน)</option>
-                      <option value="QC">QC Department (ผู้ตรวจสอบ/ผู้วิเคราะห์)</option>
-                      <option value="PRODUCTION">Production (ฝ่ายผลิต/ผู้รับมอบหมาย)</option>
-                      <option value="INVENTORY">Inventory (ผู้โอนย้าย stock)</option>
-                      <option value="DEPT_HEAD">Department Head (หัวหน้าแผนกอนุมัติ)</option>
-                      <option value="DIV_MANAGER">Division Manager (ผู้จัดการฝ่าย)</option>
-                      <option value="TN">Technic / Service (ฝ่ายเทคนิคพิจารณา)</option>
+                      {(masterData.role && masterData.role.length > 0) ? (
+                        masterData.role.map(item => (
+                          <option key={item.id} value={item.value_key}>{item.value_label}</option>
+                        ))
+                      ) : (
+                        <>
+                          <option value="SALES">Sales / TS / Purchase (ผู้แจ้งเรื่อง)</option>
+                          <option value="QEM">QEM Staff (ผู้ประเมินและคัดกรอง)</option>
+                          <option value="QMR">QMR (ผู้อนุมัติรับเรื่อง / อนุมัติแผน)</option>
+                          <option value="QC">QC Department (ผู้ตรวจสอบ/ผู้วิเคราะห์)</option>
+                          <option value="PRODUCTION">Production (ฝ่ายผลิต/ผู้รับมอบหมาย)</option>
+                          <option value="INVENTORY">Inventory (ผู้โอนย้าย stock)</option>
+                          <option value="DEPT_HEAD">Department Head (หัวหน้าแผนกอนุมัติ)</option>
+                          <option value="DIV_MANAGER">Division Manager (ผู้จัดการฝ่าย)</option>
+                          <option value="TN">Technic / Service (ฝ่ายเทคนิคพิจารณา)</option>
+                        </>
+                      )}
                     </select>
                   </div>
                 </div>
@@ -211,7 +253,15 @@ export default function App() {
           <span style={{ fontSize: '20px', fontWeight: '700', cursor: 'pointer' }}>E-CCAR / E-NCR Portal</span>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+          <button 
+            className="btn btn-secondary" 
+            style={{ padding: '8px 14px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}
+            onClick={() => setCurrentView('master-data')}
+          >
+            <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24"><path d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+            จัดการ Master Data
+          </button>
           <div style={{ textAlign: 'right' }}>
             <div style={{ fontWeight: '600', fontSize: '15px' }}>{user.name}</div>
             <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{user.role} | {user.department || user.bu}</div>
@@ -232,12 +282,21 @@ export default function App() {
         />
       )}
 
+      {currentView === 'master-data' && (
+        <MasterDataManagementView 
+          setCurrentView={setCurrentView} 
+          getHeaders={getHeaders} 
+          fetchMasterData={fetchMasterData} 
+          masterData={masterData} 
+        />
+      )}
+
       {currentView === 'ccar-new' && (
-        <CcarNewFormView setCurrentView={setCurrentView} getHeaders={getHeaders} fetchRecords={fetchRecords} />
+        <CcarNewFormView setCurrentView={setCurrentView} getHeaders={getHeaders} fetchRecords={fetchRecords} masterData={masterData} />
       )}
 
       {currentView === 'ncr-new' && (
-        <NcrNewFormView setCurrentView={setCurrentView} getHeaders={getHeaders} fetchRecords={fetchRecords} />
+        <NcrNewFormView setCurrentView={setCurrentView} getHeaders={getHeaders} fetchRecords={fetchRecords} masterData={masterData} />
       )}
 
       {currentView === 'ccar-detail' && (
@@ -419,7 +478,7 @@ function DashboardView({ ccarList, ncrList, activeTab, setActiveTab, setCurrentV
 }
 
 // CCAR CREATE COMPONENT
-function CcarNewFormView({ setCurrentView, getHeaders, fetchRecords }) {
+function CcarNewFormView({ setCurrentView, getHeaders, fetchRecords, masterData = {} }) {
   const [form, setForm] = useState({
     bu: 'AOEM', requested_by: 'Sales', subject: 'Product Quality', subject_other: '',
     product_termination: 'No', product_termination_ref: '', ccr_no: '', customer_written_doc: '',
@@ -429,7 +488,11 @@ function CcarNewFormView({ setCurrentView, getHeaders, fetchRecords }) {
     compensation: '', problem_detail: ''
   });
 
-  const subjects = ['Product Quality', 'Shade', 'Packaging', 'Delivery', 'Other'];
+  const defaultSubjects = ['Product Quality', 'Shade', 'Packaging', 'Delivery', 'Other'];
+  const subjects = (masterData.ccar_subject && masterData.ccar_subject.length > 0)
+    ? masterData.ccar_subject.map(s => s.value_key)
+    : defaultSubjects;
+
   const problemCheckboxes = {
     'Product Quality': ['Seeding', 'Gel', 'Crater', 'Sedimentation', 'Skinning', 'Hardness', 'Gloss', 'Sagging', 'Viscosity', 'Color Difference', 'Soft Blocking/Blocking', 'Contamination', 'Container Problem'],
     'Delivery': ['Shortage Weight', 'Delivery Mistake', 'Delay Delivery', 'No. COA', 'Other']
@@ -493,22 +556,36 @@ function CcarNewFormView({ setCurrentView, getHeaders, fetchRecords }) {
           <div className="form-group">
             <label>Business Unit (BU) *</label>
             <select value={form.bu} onChange={e => setForm({ ...form, bu: e.target.value })}>
-              <option value="AOEM">AOEM</option>
-              <option value="AMAP">AMAP</option>
-              <option value="AMPC">AMPC</option>
-              <option value="MO">MO</option>
-              <option value="GEN">GEN</option>
-              <option value="PTC">PTC</option>
-              <option value="CED">CED</option>
-              <option value="PDP">PDP</option>
-              <option value="OSSC">OSSC</option>
+              {(masterData.bu_ccar && masterData.bu_ccar.length > 0) ? (
+                masterData.bu_ccar.map(item => (
+                  <option key={item.id} value={item.value_key}>{item.value_label}</option>
+                ))
+              ) : (
+                <>
+                  <option value="AOEM">AOEM</option>
+                  <option value="AMAP">AMAP</option>
+                  <option value="AMPC">AMPC</option>
+                  <option value="MO">MO</option>
+                  <option value="GEN">GEN</option>
+                  <option value="PTC">PTC</option>
+                  <option value="CED">CED</option>
+                  <option value="PDP">PDP</option>
+                  <option value="OSSC">OSSC</option>
+                </>
+              )}
             </select>
           </div>
 
           <div className="form-group">
             <label>Subject (ประเภทเรื่องร้องเรียน) *</label>
             <select value={form.subject} onChange={e => setForm({ ...form, subject: e.target.value })}>
-              {subjects.map(sub => <option key={sub} value={sub}>{sub}</option>)}
+              {(masterData.ccar_subject && masterData.ccar_subject.length > 0) ? (
+                masterData.ccar_subject.map(item => (
+                  <option key={item.id} value={item.value_key}>{item.value_label}</option>
+                ))
+              ) : (
+                subjects.map(sub => <option key={sub} value={sub}>{sub}</option>)
+              )}
             </select>
           </div>
         </div>
@@ -649,14 +726,14 @@ function CcarNewFormView({ setCurrentView, getHeaders, fetchRecords }) {
 }
 
 // NCR CREATE COMPONENT
-function NcrNewFormView({ setCurrentView, getHeaders, fetchRecords }) {
+function NcrNewFormView({ setCurrentView, getHeaders, fetchRecords, masterData = {} }) {
   const [form, setForm] = useState({
     plant: 'EN', bu: 'AM', issued_by_dept: 'QC', product_code: '', product_name: '',
     batch_no: '', lot_no: '', defect_qty: '', defect_unit: 'kg', defect_detail: '', transfer_qi: 'No'
   });
 
-  const plants = ['EN', 'TH', 'DR', 'AR', 'WT', 'WB/RM', 'ED', 'PP/RM', 'PT/RM'];
-  const depts = ['QC', 'PD', 'INV', 'MRP', 'Sale', 'TS'];
+  const defaultPlants = ['EN', 'TH', 'DR', 'AR', 'WT', 'WB/RM', 'ED', 'PP/RM', 'PT/RM'];
+  const defaultDepts = ['QC', 'PD', 'INV', 'MRP', 'Sale', 'TS'];
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -689,23 +766,43 @@ function NcrNewFormView({ setCurrentView, getHeaders, fetchRecords }) {
           <div className="form-group">
             <label>โรงงาน (Plant) *</label>
             <select value={form.plant} onChange={e => setForm({ ...form, plant: e.target.value })}>
-              {plants.map(p => <option key={p} value={p}>{p}</option>)}
+              {(masterData.ncr_plant && masterData.ncr_plant.length > 0) ? (
+                masterData.ncr_plant.map(item => (
+                  <option key={item.id} value={item.value_key}>{item.value_label}</option>
+                ))
+              ) : (
+                defaultPlants.map(p => <option key={p} value={p}>{p}</option>)
+              )}
             </select>
           </div>
 
           <div className="form-group">
             <label>Business Unit (BU) *</label>
             <select value={form.bu} onChange={e => setForm({ ...form, bu: e.target.value })}>
-              <option value="AM">AM</option>
-              <option value="MO">MO</option>
-              <option value="GN">GN</option>
+              {(masterData.bu_ncr && masterData.bu_ncr.length > 0) ? (
+                masterData.bu_ncr.map(item => (
+                  <option key={item.id} value={item.value_key}>{item.value_label}</option>
+                ))
+              ) : (
+                <>
+                  <option value="AM">AM</option>
+                  <option value="MO">MO</option>
+                  <option value="GN">GN</option>
+                </>
+              )}
             </select>
           </div>
 
           <div className="form-group">
             <label>แผนกที่ออกเอกสาร (Issued by Dept) *</label>
             <select value={form.issued_by_dept} onChange={e => setForm({ ...form, issued_by_dept: e.target.value })}>
-              {depts.map(d => <option key={d} value={d}>{d}</option>)}
+              {(masterData.issued_by_dept && masterData.issued_by_dept.length > 0) ? (
+                masterData.issued_by_dept.map(item => (
+                  <option key={item.id} value={item.value_key}>{item.value_label}</option>
+                ))
+              ) : (
+                defaultDepts.map(d => <option key={d} value={d}>{d}</option>)
+              )}
             </select>
           </div>
         </div>
@@ -732,7 +829,20 @@ function NcrNewFormView({ setCurrentView, getHeaders, fetchRecords }) {
           </div>
           <div className="form-group">
             <label>หน่วยนับ</label>
-            <input type="text" value={form.defect_unit} onChange={e => setForm({ ...form, defect_unit: e.target.value })} placeholder="เช่น แกลลอน, ถัง" />
+            <select value={form.defect_unit} onChange={e => setForm({ ...form, defect_unit: e.target.value })}>
+              {(masterData.quantity_unit && masterData.quantity_unit.length > 0) ? (
+                masterData.quantity_unit.map(item => (
+                  <option key={item.id} value={item.value_key}>{item.value_label}</option>
+                ))
+              ) : (
+                <>
+                  <option value="kg">kg (กิโลกรัม)</option>
+                  <option value="pcs">pcs (ชิ้น)</option>
+                  <option value="drum">drum (ถังใหญ่)</option>
+                  <option value="pails">pails (ถังปิ๊บ)</option>
+                </>
+              )}
+            </select>
           </div>
           <div className="form-group">
             <label>โอนย้ายสถานะสินค้าในระบบ SAP (QI Transfer)</label>
@@ -1616,3 +1726,339 @@ function NcrDetailView({ recordId, setCurrentView, getHeaders, token, user }) {
     </div>
   );
 }
+
+// MASTER DATA MANAGEMENT COMPONENT
+function MasterDataManagementView({ setCurrentView, getHeaders, fetchMasterData, masterData = {} }) {
+  const [dataList, setDataList] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState('ALL');
+  const [loading, setLoading] = useState(false);
+  
+  // Form state for Add/Edit
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({
+    id: null,
+    category: 'bu_ccar',
+    field_name: 'bu',
+    value_key: '',
+    value_label: '',
+    description: '',
+    sort_order: 0,
+    is_active: 1
+  });
+
+  const categories = [
+    { key: 'ALL', label: '--- ทั้งหมด (All Categories) ---' },
+    { key: 'bu_ccar', label: 'หน่วยธุรกิจ CCAR (BU - E-CCAR)', field: 'bu' },
+    { key: 'bu_ncr', label: 'หน่วยธุรกิจ NCR (BU - E-NCR)', field: 'bu' },
+    { key: 'role', label: 'บทบาทในระบบ (System Roles)', field: 'role' },
+    { key: 'ccar_subject', label: 'หัวข้อเรื่องร้องเรียน (CCAR Subjects)', field: 'subject' },
+    { key: 'ncr_plant', label: 'โรงงาน (NCR Plants)', field: 'plant' },
+    { key: 'issued_by_dept', label: 'แผนกที่ออก NCR (Issued by Dept)', field: 'issued_by_dept' },
+    { key: 'quantity_unit', label: 'หน่วยนับ (Quantity Units)', field: 'quantity_unit' }
+  ];
+
+  const loadAllMasterData = () => {
+    setLoading(true);
+    fetch(`${API_BASE}/master-data/admin`, { headers: getHeaders() })
+      .then(res => res.json())
+      .then(data => {
+        setDataList(data || []);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error(err);
+        setLoading(false);
+      });
+  };
+
+  useEffect(() => {
+    loadAllMasterData();
+  }, []);
+
+  const handleSave = (e) => {
+    e.preventDefault();
+    const isUpdate = !!formData.id;
+    const url = isUpdate ? `${API_BASE}/master-data/${formData.id}` : `${API_BASE}/master-data`;
+    const method = isUpdate ? 'PUT' : 'POST';
+
+    fetch(url, {
+      method,
+      headers: getHeaders(),
+      body: JSON.stringify(formData)
+    })
+      .then(res => {
+        if (!res.ok) return res.json().then(d => { throw new Error(d.error || 'Failed to save'); });
+        return res.json();
+      })
+      .then(() => {
+        alert(isUpdate ? 'อัปเดตข้อมูลสำเร็จ!' : 'เพิ่มข้อมูลใหม่สำเร็จ!');
+        resetForm();
+        loadAllMasterData();
+        fetchMasterData();
+      })
+      .catch(err => alert(err.message));
+  };
+
+  const handleEdit = (item) => {
+    setIsEditing(true);
+    setFormData({
+      id: item.id,
+      category: item.category,
+      field_name: item.field_name,
+      value_key: item.value_key,
+      value_label: item.value_label,
+      description: item.description || '',
+      sort_order: item.sort_order || 0,
+      is_active: item.is_active
+    });
+  };
+
+  const handleToggleActive = (item) => {
+    fetch(`${API_BASE}/master-data/${item.id}`, {
+      method: 'PUT',
+      headers: getHeaders(),
+      body: JSON.stringify({
+        ...item,
+        is_active: item.is_active ? 0 : 1
+      })
+    })
+      .then(res => res.json())
+      .then(() => {
+        loadAllMasterData();
+        fetchMasterData();
+      })
+      .catch(err => alert(err.message));
+  };
+
+  const handleDelete = (id) => {
+    if (!window.confirm('คุณต้องการลบรายการนี้ใช่หรือไม่?')) return;
+    fetch(`${API_BASE}/master-data/${id}`, {
+      method: 'DELETE',
+      headers: getHeaders()
+    })
+      .then(res => res.json())
+      .then(() => {
+        loadAllMasterData();
+        fetchMasterData();
+      })
+      .catch(err => alert(err.message));
+  };
+
+  const resetForm = () => {
+    setIsEditing(false);
+    setFormData({
+      id: null,
+      category: selectedCategory === 'ALL' ? 'bu_ccar' : selectedCategory,
+      field_name: 'bu',
+      value_key: '',
+      value_label: '',
+      description: '',
+      sort_order: 0,
+      is_active: 1
+    });
+  };
+
+  const filteredList = selectedCategory === 'ALL'
+    ? dataList
+    : dataList.filter(d => d.category === selectedCategory);
+
+  return (
+    <div className="glass-panel" style={{ padding: '30px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '25px', alignItems: 'center' }}>
+        <div>
+          <h2 style={{ fontSize: '22px', fontWeight: '700' }}>การจัดการข้อมูล Master Data (User-Defined Fields)</h2>
+          <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '4px' }}>
+            ปรับแต่งตัวเลือกในระบบ (BU, Roles, Subjects, Plants, Depts, Units) ได้เองโดยไม่ต้องแก้ไข Code
+          </p>
+        </div>
+        <button className="btn btn-secondary" onClick={() => setCurrentView('dashboard')}>ย้อนกลับหน้าหลัก</button>
+      </div>
+
+      {/* Grid: Form on Left, Table on Right */}
+      <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr', gap: '25px' }}>
+        
+        {/* Form Panel */}
+        <div style={{ background: 'var(--bg-card)', padding: '20px', borderRadius: '10px', border: '1px solid var(--border-color)', height: 'fit-content' }}>
+          <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '15px', color: 'var(--ccar-primary)' }}>
+            {isEditing ? '✏️ แก้ไขรายการ' : '➕ เพิ่มรายการใหม่'}
+          </h3>
+
+          <form onSubmit={handleSave}>
+            <div className="form-group" style={{ marginBottom: '12px' }}>
+              <label>หมวดหมู่ (Category) *</label>
+              <select 
+                disabled={isEditing}
+                value={formData.category} 
+                onChange={e => {
+                  const cat = e.target.value;
+                  const found = categories.find(c => c.key === cat);
+                  setFormData({ ...formData, category: cat, field_name: found ? found.field : 'bu' });
+                }}
+              >
+                {categories.filter(c => c.key !== 'ALL').map(c => (
+                  <option key={c.key} value={c.key}>{c.label}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="form-group" style={{ marginBottom: '12px' }}>
+              <label>Key / รหัสย่อ (Value Key) *</label>
+              <input 
+                type="text" 
+                required 
+                disabled={isEditing}
+                value={formData.value_key} 
+                onChange={e => setFormData({ ...formData, value_key: e.target.value })} 
+                placeholder="เช่น AOEM, SALES, EN" 
+              />
+            </div>
+
+            <div className="form-group" style={{ marginBottom: '12px' }}>
+              <label>ข้อความที่แสดง (Display Label) *</label>
+              <input 
+                type="text" 
+                required 
+                value={formData.value_label} 
+                onChange={e => setFormData({ ...formData, value_label: e.target.value })} 
+                placeholder="เช่น AOEM - Automotive OEM" 
+              />
+            </div>
+
+            <div className="form-group" style={{ marginBottom: '12px' }}>
+              <label>คำอธิบาย (Description)</label>
+              <input 
+                type="text" 
+                value={formData.description} 
+                onChange={e => setFormData({ ...formData, description: e.target.value })} 
+                placeholder="รายละเอียดเพิ่มเติม" 
+              />
+            </div>
+
+            <div className="form-group" style={{ marginBottom: '12px' }}>
+              <label>ลำดับการแสดงผล (Sort Order)</label>
+              <input 
+                type="number" 
+                value={formData.sort_order} 
+                onChange={e => setFormData({ ...formData, sort_order: parseInt(e.target.value || '0') })} 
+              />
+            </div>
+
+            <div className="form-group" style={{ marginBottom: '15px' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                <input 
+                  type="checkbox" 
+                  checked={formData.is_active === 1} 
+                  onChange={e => setFormData({ ...formData, is_active: e.target.checked ? 1 : 0 })} 
+                />
+                <span>เปิดใช้งานในระบบ (Is Active)</span>
+              </label>
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>
+                {isEditing ? 'บันทึกการแก้ไข' : 'เพิ่มรายการ'}
+              </button>
+              {isEditing && (
+                <button type="button" className="btn btn-secondary" onClick={resetForm}>
+                  ยกเลิก
+                </button>
+              )}
+            </div>
+          </form>
+        </div>
+
+        {/* Table Panel */}
+        <div>
+          {/* Category Filter */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <label style={{ fontWeight: '600', fontSize: '14px' }}>กรองตามหมวดหมู่:</label>
+              <select 
+                value={selectedCategory} 
+                onChange={e => setSelectedCategory(e.target.value)}
+                style={{ padding: '6px 12px', borderRadius: '6px' }}
+              >
+                {categories.map(c => (
+                  <option key={c.key} value={c.key}>{c.label}</option>
+                ))}
+              </select>
+            </div>
+
+            <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
+              รวมทั้งหมด {filteredList.length} รายการ
+            </div>
+          </div>
+
+          <div style={{ overflowX: 'auto' }}>
+            <table className="table">
+              <thead>
+                <tr>
+                  <th style={{ width: '120px' }}>หมวดหมู่</th>
+                  <th style={{ width: '100px' }}>Value Key</th>
+                  <th>ข้อความแสดงผล (Label)</th>
+                  <th>คำอธิบาย</th>
+                  <th style={{ width: '70px', textAlign: 'center' }}>ลำดับ</th>
+                  <th style={{ width: '90px', textAlign: 'center' }}>สถานะ</th>
+                  <th style={{ width: '120px', textAlign: 'center' }}>จัดการ</th>
+                </tr>
+              </thead>
+              <tbody>
+                {loading ? (
+                  <tr><td colSpan="7" style={{ textAlign: 'center', padding: '30px' }}>กำลังโหลดข้อมูล...</td></tr>
+                ) : filteredList.length === 0 ? (
+                  <tr><td colSpan="7" style={{ textAlign: 'center', padding: '30px', color: 'var(--text-muted)' }}>ไม่พบข้อมูล Master Data ในหมวดหมู่นี้</td></tr>
+                ) : (
+                  filteredList.map(item => (
+                    <tr key={item.id} style={{ opacity: item.is_active ? 1 : 0.55 }}>
+                      <td>
+                        <span style={{ fontSize: '11px', background: 'var(--bg-input)', padding: '3px 8px', borderRadius: '4px', border: '1px solid var(--border-color)' }}>
+                          {item.category}
+                        </span>
+                      </td>
+                      <td style={{ fontWeight: '600' }}>{item.value_key}</td>
+                      <td>{item.value_label}</td>
+                      <td style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{item.description || '-'}</td>
+                      <td style={{ textAlign: 'center' }}>{item.sort_order}</td>
+                      <td style={{ textAlign: 'center' }}>
+                        <button 
+                          onClick={() => handleToggleActive(item)}
+                          style={{
+                            border: 'none', background: 'transparent', cursor: 'pointer',
+                            color: item.is_active ? 'var(--success)' : 'var(--danger)',
+                            fontWeight: '600', fontSize: '12px'
+                          }}
+                        >
+                          {item.is_active ? '🟢 ใช้งาน' : '🔴 ปิดใช้งาน'}
+                        </button>
+                      </td>
+                      <td style={{ textAlign: 'center' }}>
+                        <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
+                          <button 
+                            className="btn btn-secondary" 
+                            style={{ padding: '4px 8px', fontSize: '11px' }} 
+                            onClick={() => handleEdit(item)}
+                          >
+                            แก้ไข
+                          </button>
+                          <button 
+                            className="btn btn-secondary" 
+                            style={{ padding: '4px 8px', fontSize: '11px', color: 'var(--danger)' }} 
+                            onClick={() => handleDelete(item.id)}
+                          >
+                            ลบ
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+}
+

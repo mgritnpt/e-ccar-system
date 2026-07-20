@@ -114,3 +114,19 @@ CREATE TABLE IF NOT EXISTS `attachments` (
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (`uploaded_by`) REFERENCES `users`(`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 7. Master Data / User Defined Fields Table
+CREATE TABLE IF NOT EXISTS `master_data` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `category` VARCHAR(50) NOT NULL,
+  `field_name` VARCHAR(50) NOT NULL,
+  `value_key` VARCHAR(100) NOT NULL,
+  `value_label` VARCHAR(255) NOT NULL,
+  `description` VARCHAR(255) NULL,
+  `sort_order` INT DEFAULT 0,
+  `is_active` TINYINT(1) DEFAULT 1,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY `uniq_category_key` (`category`, `value_key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+

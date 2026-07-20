@@ -18,12 +18,11 @@ services:
       - eccar-network
 
   app-eccar:
-    image: node:20-alpine
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: eccar-app
     restart: always
-    working_dir: /app
-    volumes:
-      - .:/app
     ports:
       - "8002:8000"
     depends_on:
@@ -37,12 +36,14 @@ services:
       - DB_PORT=3306
       - JWT_SECRET=eccarSuperSecretKey5555
       - NODE_ENV=production
-    command: sh -c "npm install --prefix server && npm install --prefix client && npm run build --prefix client && npm run start"
+    volumes:
+      - uploads_data_eccar:/app/server/uploads
     networks:
       - eccar-network
 
 volumes:
   db_data_eccar:
+  uploads_data_eccar:
 
 networks:
   eccar-network:

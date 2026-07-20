@@ -115,6 +115,83 @@ async function initDb() {
       console.log('Seeding initial users completed. Default password is: 123456');
     }
 
+    // 4. Seed initial master_data if table is empty
+    const [masterRows] = await connection.query('SELECT COUNT(*) as count FROM master_data');
+    if (masterRows[0].count === 0) {
+      console.log('Seeding initial master data...');
+      const defaultMasterData = [
+        // BU (CCAR)
+        { category: 'bu_ccar', field_name: 'bu', value_key: 'AOEM', value_label: 'AOEM', description: 'Automotive OEM', sort_order: 1 },
+        { category: 'bu_ccar', field_name: 'bu', value_key: 'AMAP', value_label: 'AMAP', description: 'Auto Refinish AP', sort_order: 2 },
+        { category: 'bu_ccar', field_name: 'bu', value_key: 'AMPC', value_label: 'AMPC', description: 'Auto Refinish PC', sort_order: 3 },
+        { category: 'bu_ccar', field_name: 'bu', value_key: 'MO', value_label: 'MO', description: 'Motorcycle', sort_order: 4 },
+        { category: 'bu_ccar', field_name: 'bu', value_key: 'GEN', value_label: 'GEN', description: 'General Coating', sort_order: 5 },
+        { category: 'bu_ccar', field_name: 'bu', value_key: 'PTC', value_label: 'PTC', description: 'Protective Coating', sort_order: 6 },
+        { category: 'bu_ccar', field_name: 'bu', value_key: 'CED', value_label: 'CED', description: 'Electrodeposition', sort_order: 7 },
+        { category: 'bu_ccar', field_name: 'bu', value_key: 'PDP', value_label: 'PDP', description: 'Plastic Parts', sort_order: 8 },
+        { category: 'bu_ccar', field_name: 'bu', value_key: 'OSSC', value_label: 'OSSC', description: 'Overseas Business', sort_order: 9 },
+
+        // BU (NCR)
+        { category: 'bu_ncr', field_name: 'bu', value_key: 'AM', value_label: 'AM', description: 'Automotive', sort_order: 1 },
+        { category: 'bu_ncr', field_name: 'bu', value_key: 'MO', value_label: 'MO', description: 'Motorcycle', sort_order: 2 },
+        { category: 'bu_ncr', field_name: 'bu', value_key: 'GN', value_label: 'GN', description: 'General', sort_order: 3 },
+
+        // Roles
+        { category: 'role', field_name: 'role', value_key: 'SALES', value_label: 'Sales / TS / Purchase (ผู้แจ้งเรื่อง)', description: 'Sales and Commercial Requester', sort_order: 1 },
+        { category: 'role', field_name: 'role', value_key: 'QEM', value_label: 'QEM Staff (ผู้ประเมินและคัดกรอง)', description: 'QEM Evaluator', sort_order: 2 },
+        { category: 'role', field_name: 'role', value_key: 'QMR', value_label: 'QMR (ผู้อนุมัติรับเรื่อง / อนุมัติแผน)', description: 'Quality Management Representative', sort_order: 3 },
+        { category: 'role', field_name: 'role', value_key: 'QC', value_label: 'QC Department (ผู้ตรวจสอบ/ผู้วิเคราะห์)', description: 'Quality Control', sort_order: 4 },
+        { category: 'role', field_name: 'role', value_key: 'PRODUCTION', value_label: 'Production (ฝ่ายผลิต/ผู้รับมอบหมาย)', description: 'Production Team', sort_order: 5 },
+        { category: 'role', field_name: 'role', value_key: 'INVENTORY', value_label: 'Inventory (ผู้โอนย้าย stock)', description: 'Inventory Staff', sort_order: 6 },
+        { category: 'role', field_name: 'role', value_key: 'DEPT_HEAD', value_label: 'Department Head (หัวหน้าแผนกอนุมัติ)', description: 'Department Head Approver', sort_order: 7 },
+        { category: 'role', field_name: 'role', value_key: 'DIV_MANAGER', value_label: 'Division Manager (ผู้จัดการฝ่าย)', description: 'Division Manager', sort_order: 8 },
+        { category: 'role', field_name: 'role', value_key: 'TN', value_label: 'Technic / Service (ฝ่ายเทคนิคพิจารณา)', description: 'Technical Support', sort_order: 9 },
+
+        // CCAR Subjects
+        { category: 'ccar_subject', field_name: 'subject', value_key: 'Product Quality', value_label: 'Product Quality', description: 'Product Quality Issues', sort_order: 1 },
+        { category: 'ccar_subject', field_name: 'subject', value_key: 'Shade', value_label: 'Shade', description: 'Color/Shade Issues', sort_order: 2 },
+        { category: 'ccar_subject', field_name: 'subject', value_key: 'Packaging', value_label: 'Packaging', description: 'Packaging/Container Issues', sort_order: 3 },
+        { category: 'ccar_subject', field_name: 'subject', value_key: 'Delivery', value_label: 'Delivery', description: 'Delivery/Shipment Issues', sort_order: 4 },
+        { category: 'ccar_subject', field_name: 'subject', value_key: 'Other', value_label: 'Other', description: 'Other Issues', sort_order: 5 },
+
+        // NCR Plants
+        { category: 'ncr_plant', field_name: 'plant', value_key: 'EN', value_label: 'EN', description: 'EN Plant', sort_order: 1 },
+        { category: 'ncr_plant', field_name: 'plant', value_key: 'TH', value_label: 'TH', description: 'TH Plant', sort_order: 2 },
+        { category: 'ncr_plant', field_name: 'plant', value_key: 'DR', value_label: 'DR', description: 'DR Plant', sort_order: 3 },
+        { category: 'ncr_plant', field_name: 'plant', value_key: 'AR', value_label: 'AR', description: 'AR Plant', sort_order: 4 },
+        { category: 'ncr_plant', field_name: 'plant', value_key: 'WT', value_label: 'WT', description: 'WT Plant', sort_order: 5 },
+        { category: 'ncr_plant', field_name: 'plant', value_key: 'WB/RM', value_label: 'WB/RM', description: 'Waterbase & Raw Materials', sort_order: 6 },
+        { category: 'ncr_plant', field_name: 'plant', value_key: 'ED', value_label: 'ED', description: 'Electrodeposition Plant', sort_order: 7 },
+        { category: 'ncr_plant', field_name: 'plant', value_key: 'PP/RM', value_label: 'PP/RM', description: 'Resin & Raw Materials', sort_order: 8 },
+        { category: 'ncr_plant', field_name: 'plant', value_key: 'PT/RM', value_label: 'PT/RM', description: 'Powder & Raw Materials', sort_order: 9 },
+
+        // Issued By Dept
+        { category: 'issued_by_dept', field_name: 'issued_by_dept', value_key: 'QC', value_label: 'QC', description: 'Quality Control', sort_order: 1 },
+        { category: 'issued_by_dept', field_name: 'issued_by_dept', value_key: 'PD', value_label: 'PD', description: 'Production', sort_order: 2 },
+        { category: 'issued_by_dept', field_name: 'issued_by_dept', value_key: 'INV', value_label: 'INV', description: 'Inventory', sort_order: 3 },
+        { category: 'issued_by_dept', field_name: 'issued_by_dept', value_key: 'MRP', value_label: 'MRP', description: 'Materials & Planning', sort_order: 4 },
+        { category: 'issued_by_dept', field_name: 'issued_by_dept', value_key: 'Sale', value_label: 'Sale', description: 'Sales Dept', sort_order: 5 },
+        { category: 'issued_by_dept', field_name: 'issued_by_dept', value_key: 'TS', value_label: 'TS', description: 'Technical Service', sort_order: 6 },
+
+        // Quantity Units
+        { category: 'quantity_unit', field_name: 'quantity_unit', value_key: 'kg', value_label: 'kg', description: 'Kilograms', sort_order: 1 },
+        { category: 'quantity_unit', field_name: 'quantity_unit', value_key: 'pcs', value_label: 'pcs', description: 'Pieces', sort_order: 2 },
+        { category: 'quantity_unit', field_name: 'quantity_unit', value_key: 'drum', value_label: 'drum', description: 'Drum 200L', sort_order: 3 },
+        { category: 'quantity_unit', field_name: 'quantity_unit', value_key: 'pails', value_label: 'pails', description: 'Pails', sort_order: 4 },
+        { category: 'quantity_unit', field_name: 'quantity_unit', value_key: 'set', value_label: 'set', description: 'Set', sort_order: 5 },
+        { category: 'quantity_unit', field_name: 'quantity_unit', value_key: 'box', value_label: 'box', description: 'Box', sort_order: 6 },
+        { category: 'quantity_unit', field_name: 'quantity_unit', value_key: 'ton', value_label: 'ton', description: 'Tons', sort_order: 7 }
+      ];
+
+      for (const item of defaultMasterData) {
+        await connection.query(
+          'INSERT INTO master_data (category, field_name, value_key, value_label, description, sort_order) VALUES (?, ?, ?, ?, ?, ?)',
+          [item.category, item.field_name, item.value_key, item.value_label, item.description, item.sort_order]
+        );
+      }
+      console.log('Seeding initial master data completed.');
+    }
+
     await connection.end();
   } catch (err) {
     console.error('Error during database initialization:', err);
